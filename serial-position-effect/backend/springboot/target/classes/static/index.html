@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+(function () {
+  try {
+    var preference = localStorage.getItem('spe-theme') || 'system';
+    var theme = preference === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : preference;
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (e) {}
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:," />
+<title>Serial Position Effect Experiment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <header class="app-bar" id="app-bar">
+    <span class="app-bar__title">Serial Position Effect</span>
+    <button id="btn-settings" class="icon-btn" type="button" aria-label="Open settings" title="Settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Landing -->
+  <main id="screen-landing" class="screen screen--paper is-active">
+    <div class="card">
+      <h1>Serial Position Effect</h1>
+      <p class="lede">
+        People tend to remember the first and last items of a list better than the
+        items in the middle. This experiment records how well you recall two word
+        lists and compares the two.
+      </p>
+
+      <div class="info-panel">
+        <h2>Procedure</h2>
+        <ol>
+          <li>The session has two levels.</li>
+          <li>In each level, ten words appear one at a time. You cannot pause or skip.</li>
+          <li>After each level, type every word you remember.</li>
+          <li>When both levels are finished, your results are shown and recorded.</li>
+        </ol>
+      </div>
+
+      <p id="landing-error" class="field-error" role="alert" hidden></p>
+
+      <div class="button-row">
+        <button id="btn-start" class="btn btn--primary" type="button">Start session</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Level introduction -->
+  <main id="screen-level" class="screen screen--paper">
+    <div class="card">
+      <h1 id="level-title"></h1>
+      <p id="level-note" class="lede" hidden></p>
+      <p id="level-instructions" class="lede"></p>
+      <button id="btn-begin-level" class="btn btn--primary" type="button">Begin</button>
+    </div>
+  </main>
+
+  <!-- Word presentation -->
+  <main id="screen-test" class="screen screen--stimulus">
+    <div class="stimulus-word" id="word-display" aria-live="polite"></div>
+    <div class="stimulus-progress" id="progress-display"></div>
+  </main>
+
+  <!-- Recall -->
+  <main id="screen-recall" class="screen screen--paper">
+    <div class="card">
+      <h1 id="recall-title"></h1>
+      <p class="lede">
+        Type every word you remember, separated by spaces, commas or new lines.
+        The order does not matter.
+      </p>
+      <label class="visually-hidden" for="recall-input">Recalled words</label>
+      <textarea id="recall-input" class="recall-textarea" rows="6" autocomplete="off" spellcheck="false"></textarea>
+      <p id="recall-error" class="field-error" role="alert" hidden></p>
+      <button id="btn-submit-recall" class="btn btn--primary" type="button"></button>
+    </div>
+  </main>
+
+  <!-- Results -->
+  <main id="screen-results" class="screen screen--paper">
+    <div class="card card--wide">
+      <h1 id="results-title"></h1>
+      <p id="results-subtitle" class="lede lede--muted"></p>
+      <div id="results-body"></div>
+      <section>
+        <h2 class="results-heading">Recall by serial position, all participants</h2>
+        <p id="graph-note" class="table-caption"></p>
+        <div class="chart-wrap"><canvas id="spe-chart" aria-label="Line chart of recall percentage by serial position for the normal and semantic lists" role="img"></canvas></div>
+      </section>
+      <p id="results-error" class="field-error" role="alert" hidden></p>
+      <div class="button-row">
+        <button id="btn-results-download" class="btn btn--primary" type="button">Download spreadsheet</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings -->
+  <div id="settings-overlay" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="modal__header">
+        <h2 id="settings-title">Settings</h2>
+        <button id="btn-settings-close" class="icon-btn" type="button" aria-label="Close settings">&times;</button>
+      </div>
+
+      <div class="modal__section">
+        <p class="modal__label">Appearance</p>
+        <div class="segmented" id="theme-picker">
+          <button class="segmented__option" data-theme-choice="light" type="button">Light</button>
+          <button class="segmented__option" data-theme-choice="dark" type="button">Dark</button>
+          <button class="segmented__option" data-theme-choice="system" type="button">System</button>
+        </div>
+      </div>
+
+      <div class="modal__section">
+        <label class="modal__label" for="interval-slider">Time per word: <span id="interval-value">1.0 s</span></label>
+        <input type="range" id="interval-slider" min="1" max="3" step="0.5" value="1" />
+        <p class="modal__hint">Applies from the next level that starts.</p>
+      </div>
+
+      <div class="modal__section modal__section--divided">
+        <p class="modal__label">Data</p>
+        <div class="stack">
+          <button id="btn-settings-download" class="btn btn--secondary btn--full" type="button">Download spreadsheet</button>
+          <button id="btn-settings-delete-latest" class="btn btn--danger btn--full" type="button">Delete previous attempt</button>
+          <button id="btn-settings-clear" class="btn btn--danger btn--full" type="button">Delete all recorded sessions</button>
+        </div>
+        <p class="modal__hint">Deleting removes sessions from the spreadsheet and the graph, and cannot be undone.</p>
+        <p id="settings-status" class="modal__hint" role="status" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
