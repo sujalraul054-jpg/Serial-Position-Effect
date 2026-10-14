@@ -68,7 +68,12 @@ public class SessionService {
                 participant.getParticipantCode(),
                 participant.getFirstTestType(),
                 scored,
-                RecallImprovement.of(recalled(scored, TestType.NORMAL), recalled(scored, TestType.SEMANTIC))
+                RecallImprovement.of(
+                        result(scored, TestType.NORMAL).totalRecalled(),
+                        result(scored, TestType.SEMANTIC).totalRecalled()),
+                RecallImprovement.ofPercentages(
+                        result(scored, TestType.NORMAL).middleScore(),
+                        result(scored, TestType.SEMANTIC).middleScore())
         );
     }
 
@@ -122,11 +127,10 @@ public class SessionService {
         return entity;
     }
 
-    private static int recalled(List<TestResultDto> results, TestType type) {
+    private static TestResultDto result(List<TestResultDto> results, TestType type) {
         return results.stream()
                 .filter(result -> result.testType() == type)
-                .mapToInt(TestResultDto::totalRecalled)
                 .findFirst()
-                .orElse(0);
+                .orElseThrow();
     }
 }

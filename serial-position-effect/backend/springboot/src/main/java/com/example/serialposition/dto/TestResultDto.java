@@ -9,6 +9,7 @@ public record TestResultDto(
         TestType testType,
         int totalWords,
         int totalRecalled,
+        int middleRecalled,
         double recallPercentage,
         double primacyScore,
         double middleScore,

@@ -37,11 +37,15 @@ public class ScoringService {
 
         int total = words.size();
         int totalRecalled = (int) positions.stream().filter(PositionResultDto::recalled).count();
+        int middleRecalled = (int) positions.subList(PRIMACY_END, MIDDLE_END).stream()
+                .filter(PositionResultDto::recalled)
+                .count();
 
         return new TestResultDto(
                 testType,
                 total,
                 totalRecalled,
+                middleRecalled,
                 Percentages.of(totalRecalled, total),
                 regionPercentage(positions, 0, PRIMACY_END),
                 regionPercentage(positions, PRIMACY_END, MIDDLE_END),

@@ -291,13 +291,13 @@ function duplicateNote(label, test) {
 }
 
 function improvementHtml(result, normal, semantic) {
-  const formula = "((Semantic recall \u2212 Normal recall) / Normal recall) \u00d7 100";
+  const formula = "((Semantic Total Recall \u2212 Normal Total Recall) / Normal Total Recall) \u00d7 100";
   const improvement = result.recallImprovement;
 
   if (!Number.isFinite(improvement)) {
     return `<div class="improvement">
-      <h2>Recall improvement</h2>
-      <p class="improvement__value">Not defined</p>
+      <h2>Total Recall Improvement</h2>
+      <p class="improvement__value">N/A</p>
       <p class="improvement__formula">${formula}. Normal recall is 0, so it cannot be calculated.</p>
     </div>`;
   }
@@ -305,9 +305,38 @@ function improvementHtml(result, normal, semantic) {
   const value = `${improvement > 0 ? "+" : ""}${improvement.toFixed(1)}%`;
   const working = `((${semantic.totalRecalled} \u2212 ${normal.totalRecalled}) / ${normal.totalRecalled}) \u00d7 100`;
   return `<div class="improvement">
-      <h2>Recall improvement</h2>
+    <h2>Total Recall Improvement</h2>
       <p class="improvement__value">${value}</p>
       <p class="improvement__formula">${formula}<br>= ${working} = ${value}</p>
+    </div>`;
+}
+
+function middleImprovementHtml(result, normal, semantic) {
+  const formula = "((Semantic Middle Recall \u2212 Normal Middle Recall) / Normal Middle Recall) \u00d7 100";
+  const improvement = result.middleRecallImprovement;
+  const normalPercent = formatPercent(normal.middleScore);
+  const semanticPercent = formatPercent(semantic.middleScore);
+  const normalRecall = `${normal.middleRecalled}/4 (${normalPercent})`;
+  const semanticRecall = `${semantic.middleRecalled}/4 (${semanticPercent})`;
+
+  if (!Number.isFinite(improvement)) {
+    return `<div class="improvement">
+      <h2>Middle Position Recall Improvement</h2>
+      <p class="improvement__value">N/A</p>
+      <p class="improvement__formula">Normal middle recall: ${normalRecall}</p>
+      <p class="improvement__formula">Semantic middle recall: ${semanticRecall}</p>
+      <p class="improvement__formula">Formula: ${formula}. Normal middle recall is 0, so it cannot be calculated.</p>
+    </div>`;
+  }
+
+  const value = `${improvement > 0 ? "+" : ""}${improvement.toFixed(1)}%`;
+  const working = `((${semanticPercent} \u2212 ${normalPercent}) / ${normalPercent}) \u00d7 100`;
+  return `<div class="improvement">
+      <h2>Middle Position Recall Improvement</h2>
+      <p class="improvement__value">${value}</p>
+      <p class="improvement__formula">Normal middle recall: ${normalRecall}</p>
+      <p class="improvement__formula">Semantic middle recall: ${semanticRecall}</p>
+      <p class="improvement__formula">Formula: ${formula}<br>= ${working} = ${value}</p>
     </div>`;
 }
 
@@ -319,7 +348,7 @@ function resultsHtml(result) {
     ["Words recalled", (test) => `${test.totalRecalled} / ${test.totalWords}`],
     ["Overall recall", (test) => formatPercent(test.recallPercentage)],
     ["Primacy (positions 1\u20133)", (test) => formatPercent(test.primacyScore)],
-    ["Middle (positions 4\u20137)", (test) => formatPercent(test.middleScore)],
+    ["Middle recall", (test) => `${test.middleRecalled}/4 (${formatPercent(test.middleScore)})`],
     ["Recency (positions 8\u201310)", (test) => formatPercent(test.recencyScore)],
   ];
   const summaryRows = measures
@@ -349,6 +378,7 @@ function resultsHtml(result) {
       </table>
     </div>
     ${improvementHtml(result, normal, semantic)}
+    ${middleImprovementHtml(result, normal, semantic)}
     <h2 class="results-heading">Recall by position</h2>
     <p class="table-caption">Normal list: ten unrelated words. Semantic list: unrelated words at the start and end, and related words in the middle (shaded rows, positions 4\u20137).</p>
     <div class="table-scroll">

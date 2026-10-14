@@ -44,20 +44,23 @@ distance.
 ## Recall improvement
 
 ```
-recall improvement (%) = ((semantic recall - normal recall) / normal recall) x 100
+total recall improvement (%) = ((semantic total recalled - normal total recalled) / normal total recalled) x 100
+middle recall improvement (%) = ((semantic middle recalled - normal middle recalled) / normal middle recalled) x 100
 ```
 
 Recall is the number of words recalled (out of 10) in each list. A positive value
 means more words were recalled from the semantic list. If normal recall is 0 the
-ratio is undefined and the result is shown as "Not defined" (`n/a` in the
-spreadsheet). The results page shows the formula with the participant's own
-numbers filled in.
+ratio is undefined and the result is shown as `N/A` on the website and `n/a` in
+the spreadsheet. Middle recall counts correctly recalled words at positions 4-7
+out of four; its percentage is that count divided by four, multiplied by 100.
+The results page shows both middle counts and percentages for each test.
 
 ## Spreadsheet
 
-`GET /api/experiment/export` returns an `.xlsx` file with two sheets.
+`GET /api/experiment/export` returns an `.xlsx` file with one `Results` worksheet.
 
-**Results** has 14 columns and one row per test, so two rows per participant.
+The worksheet has one row per test, so two rows per participant. Its first 14
+columns preserve the raw test data:
 
 | Column | Content |
 |---|---|
@@ -68,14 +71,15 @@ numbers filled in.
 | Position 1 ... Position 10 | `1` if the word at that position was recalled, `0` if not |
 
 A word counts as recalled if it appears anywhere in the participant's answer,
-ignoring case and surrounding spaces. Order of recall is not scored.
-
-**Recall Improvement** has one row per participant: participant ID, normal recall,
-semantic recall, and the recall improvement as a live Excel formula
-(`=IF(B2=0,"n/a",(C2-B2)/B2*100)`). A final row gives the mean normal and semantic
-recall across all participants and the improvement calculated from those means.
-The raw data stays on the Results sheet, so it can be loaded into statistics
-software unchanged.
+ignoring case and surrounding spaces. Order of recall is not scored. After
+Position 10, the worksheet has three columns: total recall improvement, middle
+recall (Normal and Semantic counts and percentages in one cell), and middle
+position recall improvement. Participant IDs are vertically merged across each
+participant's two test rows. Middle recall is shown in each test's own row; the
+Normal row shows the 0.0% total-improvement baseline, and the Semantic row shows
+the calculated total improvement. Middle-position improvement is one live Excel
+formula in a cell merged across both test rows. A final mean row summarizes
+participants.
 
 The file is generated from the database on every download, so it always contains
 every recorded session and does not conflict with a copy open in Excel.

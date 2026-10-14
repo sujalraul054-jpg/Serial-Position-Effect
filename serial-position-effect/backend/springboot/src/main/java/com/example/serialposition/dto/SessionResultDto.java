@@ -13,6 +13,7 @@ public record SessionResultDto(
         String participantId,
         TestType firstTestType,
         List<TestResultDto> tests,
-        Double recallImprovement
+        Double recallImprovement,
+        Double middleRecallImprovement
 ) {
 }
